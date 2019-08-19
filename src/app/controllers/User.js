@@ -21,7 +21,7 @@ class UserController {
   async update(request, response) {
     const { email, oldPassword } = request.body;
 
-    const user = await User.findByPk(request.headers.userId);
+    const user = await User.findByPk(request.userId);
 
     if (email !== user.email) {
       const emailInUse = await User.findOne({ where: { email } });
