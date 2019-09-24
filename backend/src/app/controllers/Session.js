@@ -13,31 +13,23 @@ class SessionController {
       password: Yup.string().required(),
     });
 
-    const validRequestBody = await schema.isValid(request.body);
-
-    if (!validRequestBody) {
-      return response.status(400).json({ error: 'Data validation fail.' });
+    if (!(await schema.isValid(request.body))) {
+      return response.status(400).json({ error: 'Validation fails' });
     }
 
     const { email, password } = request.body;
-    const { secret, expiresIn } = authConfig;
 
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return response.status(400).json({ error: 'User does not exists.' });
+      return response.status(401).json({ error: 'User not found' });
     }
 
-    const correctPassword = await user.checkPassword(password);
-
-    if (!correctPassword) {
-      return response.status(400).json({ error: 'Password incorrect.' });
+    if (!(await user.checkPassword(password))) {
+      return response.status(401).json({ error: 'Password does not match' });
     }
 
     const { id, name } = user;
-    const token = jwt.sign({ id }, secret, {
-      expiresIn,
-    });
 
     return response.json({
       user: {
@@ -45,7 +37,9 @@ class SessionController {
         name,
         email,
       },
-      token,
+      token: jwt.sign({ id }, authConfig.secret, {
+        expiresIn: authConfig.expiresIn,
+      }),
     });
   }
 }

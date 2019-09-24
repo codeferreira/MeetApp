@@ -6,10 +6,10 @@ import Queue from '../../lib/Queue';
 import SubscriptionMail from '../jobs/SubscriptionMail';
 
 class SubscriptionController {
-  async index(req, res) {
+  async index(request, response) {
     const subscriptions = await Subscription.findAll({
       where: {
-        user_id: req.userId,
+        user_id: request.userId,
       },
       include: [
         {
@@ -25,23 +25,25 @@ class SubscriptionController {
       order: [[Meetup, 'date']],
     });
 
-    return res.json(subscriptions);
+    return response.json(subscriptions);
   }
 
-  async store(req, res) {
-    const user = await User.findByPk(req.userId);
-    const meetup = await Meetup.findByPk(req.params.meetupId, {
+  async store(request, response) {
+    const user = await User.findByPk(request.userId);
+    const meetup = await Meetup.findByPk(request.params.meetupId, {
       include: [User],
     });
 
-    if (meetup.user_id === req.userId) {
-      return res
+    if (meetup.user_id === request.userId) {
+      return response
         .status(400)
         .json({ error: "Can't subscribe to you own meetups" });
     }
 
     if (meetup.past) {
-      return res.status(400).json({ error: "Can't subscribe to past meetups" });
+      return response
+        .status(400)
+        .json({ error: "Can't subscribe to past meetups" });
     }
 
     const checkDate = await Subscription.findOne({
@@ -60,7 +62,7 @@ class SubscriptionController {
     });
 
     if (checkDate) {
-      return res
+      return response
         .status(400)
         .json({ error: "Can't subscribe to two meetups at the same time" });
     }
@@ -75,7 +77,7 @@ class SubscriptionController {
       user,
     });
 
-    return res.json(subscription);
+    return response.json(subscription);
   }
 }
 

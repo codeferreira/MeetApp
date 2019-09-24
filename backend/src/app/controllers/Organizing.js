@@ -1,10 +1,12 @@
 import Meetup from '../models/Meetup';
 
 class OrganizingController {
-  async index(req, res) {
-    const meetups = await Meetup.findAll({ where: { user_id: req.userId } });
+  async index(request, response) {
+    const meetups = await Meetup.findAll({
+      where: { user_id: request.userId },
+    });
 
-    return res.json(meetups);
+    return response.json(meetups);
   }
 }
 
